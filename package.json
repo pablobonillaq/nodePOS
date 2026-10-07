@@ -1,0 +1,18 @@
+{
+  "name": "nodepos",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Punto de venta para snacks: API GraphQL (server/) + app React Native para tablet (client/)",
+  "scripts": {
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently -n API,METRO,APP -c blue,magenta,green \"npm:server\" \"npm:metro\" \"npm:app\"",
+    "dev:sin-build": "concurrently -n API,METRO -c blue,magenta \"npm:server\" \"npm:metro\"",
+    "server": "npm run dev --prefix server",
+    "metro": "wait-on -t 120000 http-get://localhost:4000/health && npm start --prefix client",
+    "app": "wait-on -t 180000 http-get://localhost:8081/status && npm run android --prefix client -- --no-packager"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "wait-on": "^8.0.0"
+  }
+}

@@ -1,130 +1,132 @@
-# nodePOS — API para punto de venta de snacks
+# nodePOS — Snack Point of Sale API
 
-Backend **GraphQL** en **Node.js + TypeScript + PostgreSQL** para un punto de venta de comida rápida/snacks. Pensado para que una app de tablet lo consuma como cliente.
+🌐 **English** · [Español](README.es.md)
+
+**GraphQL** backend in **Node.js + TypeScript + PostgreSQL** for a fast food / snack point of sale. Designed to be consumed by a tablet app as the client.
 
 ## Stack
 
-| Pieza | Tecnología |
+| Piece | Technology |
 |---|---|
-| Servidor HTTP | Express 5 |
-| GraphQL | GraphQL Yoga 5 (incluye GraphiQL en desarrollo) |
-| Base de datos | PostgreSQL 16 |
-| ORM / migraciones | Drizzle ORM + drizzle-kit |
+| HTTP server | Express 5 |
+| GraphQL | GraphQL Yoga 5 (includes GraphiQL in development) |
+| Database | PostgreSQL 16 |
+| ORM / migrations | Drizzle ORM + drizzle-kit |
 | Auth | JWT (`Authorization: Bearer <token>`) + bcrypt |
-| Validación | Zod |
+| Validation | Zod |
 
-## Estructura
+## Structure
 
 ```
 src/
-├── index.ts               # Arranque de Express + Yoga, /health
-├── config/env.ts          # Variables de entorno validadas con zod
+├── index.ts               # Express + Yoga startup, /health
+├── config/env.ts          # Environment variables validated with zod
 ├── db/
-│   ├── schema.ts          # Tablas: users, categories, products, orders, order_items
-│   ├── client.ts          # Pool de pg + instancia de Drizzle
-│   └── seed.ts            # Admin, cajero demo y catálogo de ejemplo
+│   ├── schema.ts          # Tables: users, categories, products, orders, order_items
+│   ├── client.ts          # pg pool + Drizzle instance
+│   └── seed.ts            # Admin, demo cashier and sample catalog
 ├── graphql/
-│   ├── base.ts            # Query/Mutation raíz, scalar DateTime
-│   ├── context.ts         # Contexto por request (db + usuario del JWT)
-│   └── schema.ts          # Une typeDefs y resolvers de los módulos
-├── lib/                   # auth (JWT, guards), errores, dinero, utilidades
+│   ├── base.ts            # Root Query/Mutation, DateTime scalar
+│   ├── context.ts         # Per-request context (db + user loaded from the JWT)
+│   └── schema.ts          # Merges module typeDefs and resolvers
+├── lib/                   # auth (JWT, guards), errors, money, utilities
 └── modules/
-    ├── auth/              # login, usuarios y roles
-    ├── catalog/           # categorías y productos
-    ├── orders/            # órdenes, líneas, pagos, estados
-    └── reports/           # resumen de ventas, top productos, por día/hora
+    ├── auth/              # login, users and roles
+    ├── catalog/           # categories and products
+    ├── orders/            # orders, line items, payments, statuses
+    └── reports/           # sales summary, top products, by day/hour
 ```
 
-## Puesta en marcha
+## Getting started
 
-Requisitos: **Node 20+** y **PostgreSQL 16** instalado en tu equipo (no se necesita Docker).
+Requirements: **Node 20+** and **PostgreSQL 16** installed on your machine (Docker is not required).
 
-### 1. Instalar PostgreSQL (Windows)
+### 1. Install PostgreSQL (Windows)
 
 ```bash
 winget install PostgreSQL.PostgreSQL.16
 ```
 
-O descarga el instalador desde <https://www.postgresql.org/download/windows/>. Durante la instalación define una contraseña para el usuario `postgres` y **anótala**. Deja el puerto en `5432`.
+Or download the installer from <https://www.postgresql.org/download/windows/>. During installation, set a password for the `postgres` user and **write it down**. Keep the port at `5432`.
 
-### 2. Crear el usuario y la base de datos
+### 2. Create the user and the database
 
-Abre **SQL Shell (psql)** desde el menú Inicio. La consola hace las preguntas una por una: presiona **Enter** en `Server`, `Database`, `Port` y `Username` para aceptar los valores por defecto, y luego escribe la contraseña de `postgres` (no se ve al escribirla).
+Open **SQL Shell (psql)** from the Start menu. The console asks its questions one at a time: press **Enter** at `Server`, `Database`, `Port` and `Username` to accept the defaults, then type the `postgres` password (it isn't shown as you type).
 
-> Si no aparece en el menú: `"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres`
+> If it isn't in the menu: `"C:\Program Files\PostgreSQL\16\bin\psql.exe" -U postgres`
 
-En el prompt `postgres=#` ejecuta:
+At the `postgres=#` prompt run:
 
 ```sql
 CREATE USER pos WITH PASSWORD 'pos';
 CREATE DATABASE nodepos OWNER pos;
 ```
 
-Sal con `\q`. (También puedes hacerlo desde **pgAdmin 4** → clic derecho en el servidor → *Query Tool* → F5.)
+Exit with `\q`. (You can also do this from **pgAdmin 4** → right-click the server → *Query Tool* → F5.)
 
-### 3. Configurar y arrancar la API
+### 3. Configure and start the API
 
 ```bash
 npm install
 copy .env.example .env        # macOS/Linux: cp .env.example .env
-npm run db:push               # crea las tablas a partir de src/db/schema.ts
-npm run db:seed               # admin/admin123, cajero/cajero123 y catálogo demo
+npm run db:push               # creates the tables from src/db/schema.ts
+npm run db:seed               # admin/admin123, cajero/cajero123 and demo catalog
 npm run dev                   # http://localhost:4000/graphql
 ```
 
-El `.env` ya apunta a `postgres://pos:pos@localhost:5432/nodepos`. Si usaste otro usuario, contraseña o puerto, ajusta `DATABASE_URL`.
+The `.env` already points to `postgres://pos:pos@localhost:5432/nodepos`. If you used a different user, password or port, adjust `DATABASE_URL`. Also replace `JWT_SECRET` with a long random string.
 
-Abre `http://localhost:4000/graphql` en el navegador para usar GraphiQL.
+Open `http://localhost:4000/graphql` in your browser to use GraphiQL.
 
-> Para producción usa migraciones versionadas: `npm run db:generate` (genera SQL en `drizzle/`) y `npm run db:migrate`.
+> For production, use versioned migrations: `npm run db:generate` (generates SQL in `drizzle/`) and `npm run db:migrate`.
 
-### Alternativa: PostgreSQL con Docker
+### Alternative: PostgreSQL with Docker
 
-Si tienes Docker Desktop instalado, puedes saltarte los pasos 1 y 2 y ejecutar `npm run db:up` (usa `docker-compose.yml` con las mismas credenciales).
+If you have Docker Desktop installed, you can skip steps 1 and 2 and run `npm run db:up` (uses `docker-compose.yml` with the same credentials).
 
 ## Scripts
 
-| Script | Descripción |
+| Script | Description |
 |---|---|
-| `dev` | Servidor con recarga automática (tsx watch) |
-| `build` / `start` | Compila a `dist/` y ejecuta |
-| `typecheck` | Verifica tipos sin compilar |
-| `db:up` / `db:down` | (Opcional, requiere Docker) Inicia / detiene PostgreSQL en contenedor |
-| `db:push` | Sincroniza el esquema directo a la BD (desarrollo) |
-| `db:generate` / `db:migrate` | Genera / aplica migraciones SQL |
-| `db:studio` | Explorador visual de la BD |
-| `db:seed` | Datos iniciales |
+| `dev` | Server with auto-reload (tsx watch) |
+| `build` / `start` | Compiles to `dist/` and runs it |
+| `typecheck` | Type-checks without compiling |
+| `db:up` / `db:down` | (Optional, requires Docker) Starts / stops PostgreSQL in a container |
+| `db:push` | Syncs the schema directly to the DB (development) |
+| `db:generate` / `db:migrate` | Generates / applies SQL migrations |
+| `db:studio` | Visual DB explorer |
+| `db:seed` | Initial data |
 
-## Reglas de negocio
+## Business rules
 
-- **Dinero en centavos**: en BD todo es entero (`price_cents`, `total_cents`…); la API expone pesos como `Float`.
-- **IVA incluido**: los precios del catálogo ya incluyen IVA (`TAX_RATE`, 16% por defecto). El total de la orden es la suma de líneas y el impuesto se desglosa.
-- **Precio congelado**: cada línea guarda nombre y precio del producto al momento de la venta.
-- **Ticket diario**: `ticketNumber` se reinicia cada día (zona horaria `BUSINESS_TIMEZONE`).
-- **Flujo de estados**: `PENDING → PREPARING → READY → COMPLETED` (solo hacia adelante). `COMPLETED` exige que esté pagada. `CANCELLED` solo vía `cancelOrder`.
-- **Edición**: solo se agregan/quitan productos mientras la orden está `PENDING` y sin pagar.
-- **Pagos**: `CASH` requiere `amountPaid` y calcula `change`; `CARD` y `TRANSFER` cobran el total exacto.
-- **Cancelaciones**: un cajero puede cancelar órdenes no pagadas; las pagadas solo ADMIN/MANAGER (quedan como `REFUNDED`).
-- **Bajas lógicas**: borrar productos/categorías los marca `active = false`. `available = false` es "agotado" temporal.
+- **Money in cents**: everything is stored as integers in the DB (`price_cents`, `total_cents`…); the API exposes pesos as `Float`.
+- **VAT included**: catalog prices already include VAT (`TAX_RATE`, 16% by default). The order total is the sum of its lines and the tax is broken out.
+- **Frozen price**: each line stores the product's name and price at the time of sale.
+- **Daily ticket**: `ticketNumber` resets every day (in the `BUSINESS_TIMEZONE` time zone).
+- **Status flow**: `PENDING → PREPARING → READY → COMPLETED` (forward only). `COMPLETED` requires the order to be paid. `CANCELLED` only via `cancelOrder`.
+- **Editing**: products can only be added/removed while the order is `PENDING` and unpaid.
+- **Payments**: `CASH` requires `amountPaid` and calculates `change`; `CARD` and `TRANSFER` charge the exact total.
+- **Cancellations**: a cashier can cancel unpaid orders; paid ones only ADMIN/MANAGER (they become `REFUNDED`).
+- **Soft deletes**: deleting products/categories sets `active = false`. `available = false` means temporarily sold out.
 
 ## Roles
 
-| Acción | CASHIER | MANAGER | ADMIN |
+| Action | CASHIER | MANAGER | ADMIN |
 |---|:-:|:-:|:-:|
-| Ver catálogo, crear/cobrar órdenes, marcar agotado | ✅ | ✅ | ✅ |
-| Cancelar órdenes pagadas | | ✅ | ✅ |
-| Crear/editar productos y categorías | | ✅ | ✅ |
-| Reportes | | ✅ | ✅ |
-| Gestionar usuarios (crear, restablecer contraseña, desactivar) | | | ✅ |
+| View catalog, create/charge orders, mark sold out | ✅ | ✅ | ✅ |
+| Cancel paid orders | | ✅ | ✅ |
+| Create/edit products and categories | | ✅ | ✅ |
+| Reports | | ✅ | ✅ |
+| Manage users (create, reset password, deactivate) | | | ✅ |
 
-## Ejemplos para la tablet
+## Examples for the tablet
 
-Todas las operaciones (excepto `login` y `health`) requieren el header `Authorization: Bearer <token>`.
+All operations (except `login` and `health`) require the `Authorization: Bearer <token>` header.
 
 ```graphql
 mutation { login(username: "cajero", password: "cajero123") { token user { id name role mustChangePassword } } }
 
-# Menú para pintar la pantalla de venta
+# Menu to render the sale screen
 query Menu {
   categories {
     id name color
@@ -132,25 +134,25 @@ query Menu {
   }
 }
 
-# Crear orden
+# Create an order
 mutation {
   createOrder(input: {
     customerName: "Ana"
     items: [
-      { productId: 1, quantity: 2, notes: "sin chile" }
+      { productId: 1, quantity: 2, notes: "no chili" }
       { productId: 10, quantity: 1 }
     ]
   }) { id ticketNumber total items { productName quantity lineTotal notes } }
 }
 
-# Cobrar en efectivo
+# Pay in cash
 mutation { payOrder(orderId: 1, method: CASH, amountPaid: 200) { total amountPaid change paymentStatus } }
 
-# Vista de cocina
+# Kitchen view
 query { activeOrders { id ticketNumber status customerName items { productName quantity notes } } }
 mutation { updateOrderStatus(orderId: 1, status: PREPARING) { id status } }
 
-# Corte del día (sin from/to = hoy)
+# End-of-day report (no from/to = today)
 query {
   salesSummary { orderCount grossSales tax netSales averageTicket byPaymentMethod { method total } }
   topProducts(limit: 5) { productName quantity revenue }
@@ -158,26 +160,26 @@ query {
 }
 ```
 
-## Usuarios y contraseñas
+## Users and passwords
 
-- **Contraseñas temporales**: el administrador nunca elige ni conoce la contraseña definitiva de nadie. `createUser` y `resetUserPassword` generan una contraseña temporal aleatoria (ej. `K7PM-W3XQ`) que se muestra **una sola vez** y vence en 24 h.
-- **Cambio obligatorio**: quien inicia sesión con una contraseña temporal recibe un token restringido; el servidor rechaza todo con `PASSWORD_CHANGE_REQUIRED` excepto `me` y `changePassword`, hasta que elija su propia contraseña (mín. 8 caracteres, con letras y números).
-- **Revocación inmediata**: cada usuario tiene un `token_version`. Restablecer la contraseña, desactivar al usuario o cambiar la contraseña lo incrementa, y todas las sesiones anteriores dejan de funcionar al instante. El rol y el estado activo se leen de la BD en cada request.
-- **Trazabilidad**: se guardan `lastLoginAt` y `passwordChangedAt`. Si el administrador usara la contraseña temporal antes que el usuario, este lo notaría porque ya no le funcionaría y tendría que pedir otro restablecimiento.
-- Los usuarios del seed (`admin`, `cajero`) también deben cambiar su contraseña en el primer inicio de sesión.
+- **Temporary passwords**: the administrator never chooses or knows anyone's final password. `createUser` and `resetUserPassword` generate a random temporary password (e.g. `K7PM-W3XQ`) that is shown **only once** and expires in 24 h.
+- **Mandatory change**: whoever logs in with a temporary password gets a restricted token; the server rejects everything with `PASSWORD_CHANGE_REQUIRED` except `me` and `changePassword`, until they choose their own password (min. 8 characters, with letters and numbers).
+- **Immediate revocation**: each user has a `token_version`. Resetting the password, deactivating the user or changing the password increments it, and all previous sessions stop working instantly. Role and active status are read from the DB on every request.
+- **Traceability**: `lastLoginAt` and `passwordChangedAt` are recorded. If the administrator used the temporary password before the user did, the user would notice because it would no longer work, and would have to request another reset.
+- Seed users (`admin`, `cajero`) must also change their password on first login.
 
-> Tras actualizar a esta versión ejecuta `npm run db:push` para agregar las columnas nuevas a `users`. Las sesiones abiertas se cierran y hay que volver a iniciar sesión.
+> After updating to this version, run `npm run db:push` to add the new columns to `users`. Open sessions are closed and users must log in again.
 
-## Errores
+## Errors
 
-Los errores de negocio llegan en `errors[].extensions.code`: `UNAUTHENTICATED`, `FORBIDDEN`, `BAD_USER_INPUT`, `NOT_FOUND`, `CONFLICT`. En producción los errores inesperados se ocultan.
+Business errors are returned in `errors[].extensions.code`: `UNAUTHENTICATED`, `FORBIDDEN`, `PASSWORD_CHANGE_REQUIRED`, `BAD_USER_INPUT`, `NOT_FOUND`, `CONFLICT`. In production, unexpected errors are masked.
 
-## Siguientes pasos sugeridos
+## Suggested next steps
 
-- `graphql-codegen` para generar tipos de resolvers y del cliente de la tablet.
-- DataLoader para evitar N+1 en `Order.items`, `Product.category`, etc.
-- Suscripciones (Yoga las soporta vía SSE) para avisar a cocina de órdenes nuevas en tiempo real.
-- Login por PIN para cambiar rápido de cajero en la tablet.
-- Turnos / corte de caja con fondo inicial y retiros.
-- Modificadores de producto (tamaño, extras) e inventario.
-- Pruebas (Vitest) y Dockerfile para la API.
+- `graphql-codegen` to generate types for resolvers and the tablet client.
+- DataLoader to avoid N+1 queries in `Order.items`, `Product.category`, etc.
+- Subscriptions (Yoga supports them via SSE) to notify the kitchen of new orders in real time.
+- PIN login for quick cashier switching on the tablet.
+- Shifts / cash register closing with opening float and withdrawals.
+- Product modifiers (size, extras) and inventory.
+- Tests (Vitest) and a Dockerfile for the API.

@@ -1,98 +1,102 @@
 # nodePOS
 
-Punto de venta para un negocio de snacks.
+🌐 **English** · [Español](README.es.md)
+
+Point of sale system for a snack business.
 
 ```
 nodePOS/
-├── server/   API GraphQL — Node.js + TypeScript + PostgreSQL  (ver server/README.md)
-└── client/   App para tablet — React Native CLI + TypeScript
+├── server/   GraphQL API — Node.js + TypeScript + PostgreSQL  (see server/README.md)
+└── client/   Tablet app — React Native CLI + TypeScript
 ```
 
-## Requisitos
+> The app's user interface is in Spanish. UI labels are quoted in Spanish below, with their meaning in English.
+
+## Requirements
 
 - Node 20+
-- PostgreSQL 16 con la base `nodepos` creada (ver [server/README.md](server/README.md))
-- Entorno de React Native para Android: Android Studio, JDK 17 y `ANDROID_HOME` configurado
-  ([guía oficial](https://reactnative.dev/docs/set-up-your-environment))
-- Un emulador abierto o la tablet conectada por USB con depuración USB activada
+- PostgreSQL 16 with the `nodepos` database created (see [server/README.md](server/README.md))
+- React Native environment for Android: Android Studio, JDK 17 and `ANDROID_HOME` configured
+  ([official guide](https://reactnative.dev/docs/set-up-your-environment))
+- A running emulator, or the tablet connected via USB with USB debugging enabled
 
-## Primera vez
+## First time setup
 
 ```bash
-npm run install:all                 # instala dependencias de raíz, server y client
-copy server\.env.example server\.env  # si aún no existe
-npm run db:push --prefix server     # crea las tablas
-npm run db:seed --prefix server     # usuarios y catálogo demo
+npm run install:all                   # installs root, server and client dependencies
+copy server\.env.example server\.env  # if it doesn't exist yet (macOS/Linux: cp)
+npm run db:push --prefix server       # creates the tables
+npm run db:seed --prefix server       # demo users and catalog
 ```
 
-## Ejecutar todo con un comando
+## Run everything with one command
 
 ```bash
 npm run dev
 ```
 
-Arranca en orden, cada paso espera al anterior:
+Starts in order, each step waiting for the previous one:
 
-1. **API**: `server` en `http://localhost:4000/graphql`
-2. **METRO**: el empaquetador de React Native, cuando `/health` de la API responde (incluye conexión a la BD)
-3. **APP**: compila e instala la app en el emulador/tablet, cuando Metro está listo en el puerto 8081
+1. **API**: `server` at `http://localhost:4000/graphql`
+2. **METRO**: the React Native bundler, once the API's `/health` responds (includes the DB connection)
+3. **APP**: builds and installs the app on the emulator/tablet, once Metro is ready on port 8081
 
-Si la app ya está instalada y solo cambiaste código JS/TS, usa `npm run dev:sin-build` (API + Metro, sin recompilar Android) y abre la app en la tablet.
+If the app is already installed and you only changed JS/TS code, use `npm run dev:sin-build` (API + Metro, without rebuilding Android) and open the app on the tablet.
 
-| Script | Qué hace |
+| Script | What it does |
 |---|---|
-| `npm run dev` | API → Metro → compila e instala la app |
+| `npm run dev` | API → Metro → builds and installs the app |
 | `npm run dev:sin-build` | API → Metro |
-| `npm run server` | Solo la API |
-| `npm run install:all` | Instala dependencias de todo |
+| `npm run server` | API only |
+| `npm run install:all` | Installs all dependencies |
 
-## Conectar la app al servidor
+## Connecting the app to the server
 
-En la pantalla de login toca **"Servidor: …"** para cambiar la dirección:
+On the login screen, tap **"Servidor: …"** (Server) to change the address:
 
-| Dónde corre la app | Dirección |
+| Where the app runs | Address |
 |---|---|
-| Emulador de Android | `http://10.0.2.2:4000` (valor por defecto) |
-| Tablet física en la misma Wi-Fi | `http://<IP-de-tu-PC>:4000`, ej. `http://192.168.1.50:4000` |
+| Android emulator | `http://10.0.2.2:4000` (default) |
+| Physical tablet on the same Wi-Fi | `http://<your-PC-IP>:4000`, e.g. `http://192.168.1.50:4000` |
 
-- Para ver la IP de tu PC: `ipconfig` → "Dirección IPv4".
-- La primera vez que corre la API, Windows puede pedir permiso en el Firewall: permite el acceso en **redes privadas**.
-- La dirección se guarda en la tablet; solo hay que configurarla una vez.
+- To find your PC's IP: `ipconfig` → "IPv4 Address".
+- The first time the API runs, Windows may ask for Firewall permission: allow access on **private networks**.
+- The address is saved on the tablet; you only need to set it once.
 
-Usuarios demo: `admin / admin123` (todo) y `cajero / cajero123` (venta y órdenes). Al crearse con el seed, la app les pide crear su propia contraseña en el primer inicio de sesión.
+Demo users: `admin / admin123` (full access) and `cajero / cajero123` (cashier: sales and orders). When created by the seed, the app asks them to create their own password on first login.
 
-## La app
+## The app
 
-| Pantalla | Quién | Qué hace |
+| Screen | Who | What it does |
 |---|---|---|
-| **Venta** | Todos | Menú por categorías, búsqueda, carrito con notas por producto, cobro en efectivo (con cambio), tarjeta o transferencia, o enviar sin cobrar. Mantén presionado un producto para marcarlo agotado. |
-| **Órdenes** | Todos | Tablero de cocina (Pendientes / Preparando / Listas) que se actualiza cada 10 s; avanzar estado, cobrar o cancelar. Pestaña "Hoy" con el historial del día. |
-| **Reportes** | Admin / Gerente | Ventas, ticket promedio, IVA, formas de pago, top productos y ventas por hora/día. |
-| **Catálogo** | Admin / Gerente | Alta, edición y baja de productos y categorías, disponibilidad. |
-| **Usuarios** | Admin | Crear usuarios (cajero, gerente o administrador), editar nombre y rol, restablecer contraseña y activar/desactivar. Crear y restablecer generan una contraseña temporal que el usuario cambia por una propia al entrar. |
+| **Venta** (Sale) | Everyone | Menu by category, search, cart with per-item notes, payment in cash (with change), card or bank transfer, or send the order without paying. Long-press a product to mark it as sold out. |
+| **Órdenes** (Orders) | Everyone | Kitchen board (Pending / Preparing / Ready) refreshed every 10 s; advance status, take payment or cancel. "Hoy" (Today) tab with the day's history. |
+| **Reportes** (Reports) | Admin / Manager | Sales, average ticket, VAT, payment methods, top products and sales by hour/day. |
+| **Catálogo** (Catalog) | Admin / Manager | Create, edit and remove products and categories; availability. |
+| **Usuarios** (Users) | Admin | Create users (cashier, manager or admin), edit name and role, reset password and activate/deactivate. Creating and resetting generate a temporary password that the user replaces with their own on login. |
 
-Cualquier usuario puede cambiar su contraseña desde **"Cambiar contraseña"** en la barra lateral.
+Any user can change their password from **"Cambiar contraseña"** (Change password) in the sidebar.
 
-Código de la app en `client/src/`:
+App code in `client/src/`:
 
 ```
-api/         cliente GraphQL (fetch), consultas y tipos
-components/  botones, modales, cobro, barra lateral
-context/     sesión (JWT guardado con AsyncStorage)
+api/         GraphQL client (fetch), queries and types
+components/  buttons, modals, payment, sidebar
+context/     session (JWT stored with AsyncStorage)
 hooks/       useQuery / useMutation
-screens/     Login, Venta, Órdenes, Reportes, Catálogo
+screens/     Login, Sale, Orders, Reports, Catalog, Users
 ```
 
-## Después de actualizar el servidor
+## After updating the server
 
-Si el esquema de la base cambió (por ejemplo, al agregar la administración de usuarios):
+If the database schema changed (for example, after adding user management):
 
 ```bash
 npm run db:push --prefix server
 ```
 
-## Problemas comunes
+## Troubleshooting
 
-- **"No se pudo conectar con el servidor"**: revisa la dirección del servidor en el login, que la API esté corriendo y que el Firewall permita el puerto 4000.
-- **Metro nunca arranca**: la API no responde en `/health`; normalmente PostgreSQL está detenido o `DATABASE_URL` es incorrecta.
-- **`adb` / `ANDROID_HOME` no encontrado**: falta configurar el entorno de Android (ver Requisitos).
+- **"No se pudo conectar con el servidor"** (could not connect to the server): check the server address on the login screen, that the API is running, and that the Firewall allows port 4000.
+- **Metro never starts**: the API isn't responding on `/health`; usually PostgreSQL is stopped or `DATABASE_URL` is wrong.
+- **`adb` / `ANDROID_HOME` not found**: the Android environment isn't set up (see Requirements).
